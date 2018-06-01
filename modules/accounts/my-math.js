@@ -1,4 +1,5 @@
 var bigint = require("big-integer")
+
 function RandBit() {
 	return Math.floor(Math.random() * 2)
 }	
@@ -23,9 +24,14 @@ function Absmod(x, p) {
 	return x.mod(p).add(p).mod(p);
 }
 
+const inRange = (x, l, r) => {
+	return (x.compare(l) != -1 && x.compare(r) != 1)
+}
+
 module.exports = {
 	RandInt: RandInt,
 	RandIntRange: RandIntRange,
 	Inverse: Inverse,
-	Absmod: Absmod
+	Absmod: Absmod,
+	InRange: inRange,
 }

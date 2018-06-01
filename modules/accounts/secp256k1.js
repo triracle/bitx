@@ -1,5 +1,6 @@
 var bigint = require("big-integer")
 var math = require("./my-math.js")
+var sha3 = require("js-sha3")
 const p = bigint("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16)
 const a = bigint("0000000000000000000000000000000000000000000000000000000000000000", 16)
 const b = bigint("0000000000000000000000000000000000000000000000000000000000000007", 16)
@@ -50,19 +51,6 @@ const mul = (P, k, a, b, p) => {
 
 
 
-function GenSeed() {
-	return math.RandInt(256, p)
-}
-
-
-function GenPrivateKey(seed, id) {
-	var pk = seed.mod(n)
-	for(var i=0; i<id; i++) {
-		pk = pk.multiply(base).mod(n)
-		if (pk <2) i--;
-	}
-	return pk;
-}
 
 function GetPubKey(privatekey) {
 	return mul(G, privatekey, a, b, p)
@@ -71,7 +59,7 @@ function GetPubKey(privatekey) {
 const sign = (m, privatekey) => {
 	while (true) {
 		var k  = math.RandIntRange(256, bigint(2), n)
-		console.log(k.toString())
+		//console.log(k.toString())
 		var Q = mul(G, k, a, b ,p)
 		var r = Q.x.mod(n);
 		if (r.equals(0)) continue;
@@ -82,29 +70,26 @@ const sign = (m, privatekey) => {
 	}
 }
 
-function inRange(x, l, r) {
-	return (x.compare(l) != -1 && x.compare(r) != 1)
-}
-
 const verify = (m, signature, publickey) => {
 	var s = signature.s
 	var r = signature.r
-	if (!inRange(s, 2, n-1) || !inRange(r, 2, n-1)) return false;
+	if (!math.InRange(s, 2, n-1) || !math.InRange(r, 2, n-1)) return false;
 	var w = math.Inverse(s, n)
 	var u1 = m.multiply(w).mod(n)
 	var u2 = r.multiply(w).mod(n)
 	var X = add(mul(G, u1, a, b, p), mul(publickey, u2, a, b, p), a, b, p)
 	var v = X.x.mod(n)
-	console.log("v: " + v.toString())
-	console.log("r: " + r.toString())
-	return (v==r)
+	//console.log("v: " + v.toString())
+	//console.log("r: " + r.toString())
+	return (v.equals(r))
 }
+
+
 
 
 module.exports = {
 	sign: sign,
 	verify: verify,
-	genSeed: GenSeed,
-	genPrivateKey: GenPrivateKey,
-	getPublicKey: GetPubKey
+	getPublicKey: GetPubKey,
+	p: p
 }
